@@ -1,0 +1,9 @@
+seeds:
+  - url: https://scp-wiki-cn.wikidot.com/most-recently-edited
+    scopeType: "page-spa"
+
+
+workers: 2
+combineWARC: true
+logging: stats
+#logLevel: debug

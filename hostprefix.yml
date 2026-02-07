@@ -1,0 +1,10 @@
+seeds:
+  - url: https://scp-wiki-cn.wikidot.com/most-recently-edited/
+    scopeType: "prefix"
+  
+
+workers: 8
+combineWARC: true
+logging: stats
+pageLimit: 10
+#logLevel: debug

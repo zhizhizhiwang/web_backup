@@ -4,3 +4,6 @@
 .vscode
 .github
 __pycache__
+
+config.json
+failed_urls.txt

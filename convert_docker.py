@@ -2,6 +2,7 @@ import subprocess
 from pathlib import Path
 import sys
 import os
+from lib.docker_utils import docker_run, docker_cmd
 
 def win_to_wsl_path(path: Path) -> str:
     path = path.resolve()
@@ -34,8 +35,7 @@ def warc_to_zim_docker(input_path: Path, output_path: Path):
     
 
     cmd = [
-        "wsl",
-        "docker", "run", "--rm",
+        "run", "--rm",
         "-v", f"{wsl_mount}:/data",
         "ghcr.io/openzim/warc2zim",
         "warc2zim",    
@@ -44,8 +44,8 @@ def warc_to_zim_docker(input_path: Path, output_path: Path):
         "--output", output_inside,
     ]
 
-    print("Running:", " ".join(cmd))
-    subprocess.run(cmd, check=True)
+    print("Running:"," ".join(docker_cmd() + cmd))
+    docker_run(cmd, check=True)
 
 
 if __name__ == "__main__":
@@ -53,4 +53,5 @@ if __name__ == "__main__":
         print("Usage: python convert_docker.py <input> <output>")
         sys.exit(1)
 
+    
     warc_to_zim_docker(Path(sys.argv[1]), Path(sys.argv[2]))

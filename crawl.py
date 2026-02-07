@@ -6,6 +6,7 @@ import json
 from rich.live import Live
 from lib.ui import CrawlUI
 from lib.log_processor import LogProcessor
+from lib.docker_utils import docker_cmd, docker_popen
 
 def win_to_wsl_path(path: Path) -> str:
     path = path.resolve()
@@ -35,8 +36,7 @@ def crawl(input_path: Path):
     
 
     cmd = [
-        "wsl",
-        "docker", "run", "--rm" ,
+        "run", "--rm" ,
         "-v", f"{wsl_mount}:/data", 
         "-v", f"{wsl_mount}/crawls:/crawls/",
         "webrecorder/browsertrix-crawler",
@@ -44,8 +44,8 @@ def crawl(input_path: Path):
         "--config" , input_inside
     ]
 
-    print("Running:", " ".join(cmd))
-    proc = subprocess.Popen(
+    print("Running:"," ".join(docker_cmd() + cmd))
+    proc = docker_popen(
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

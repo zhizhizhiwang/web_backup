@@ -55,8 +55,6 @@ def crawl(input_path: Path):
 
     processor = LogProcessor()
 
-
-
     for line in proc.stdout:
         processor.process_line(line.rstrip())
 
@@ -67,7 +65,7 @@ def crawl(input_path: Path):
 
     if processor.stats.failed_urls:
         with open("failed_urls.txt", "w", encoding="utf-8") as f:
-            for url in sorted(processor.state.failed_urls):
+            for url in sorted(processor.stats.failed_urls):
                 f.write(url + "\n")
     
     return_code = proc.wait()

@@ -3,7 +3,7 @@ import time
 from rich.console import Console
 
 from wikidot import main_crawl, LAST_TS
-from browsertrix import write_browsertrix_seeds
+from browsertrix import write_browsertrix_seeds_yaml
 from utils import  write_updates_json, render_updates_table
 
 
@@ -18,7 +18,7 @@ def main():
     ap.add_argument("site", choices=["wikidot"])
     ap.add_argument("--pages", type=int, default=5)
     ap.add_argument("--out", default="recent_updates.json")
-    ap.add_argument("--browsertrix", help="output seeds.yaml")
+    ap.add_argument("--browsertrix", help="seeds will be added to YAML config")
     ap.add_argument("--since", help="time set (UTC)")
 
     args = ap.parse_args()
@@ -33,7 +33,7 @@ def main():
     
     write_updates_json(updates, args.out)
     if args.browsertrix:
-        write_browsertrix_seeds(updates, args.browsertrix)
+        write_browsertrix_seeds_yaml(updates, args.browsertrix)
         console.print(f"[+] Browsertrix seeds written to {args.browsertrix}")
 
     console.print(f"[+] {len(updates)} updates discovered")

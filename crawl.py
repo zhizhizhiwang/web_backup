@@ -1,10 +1,7 @@
 import subprocess
 from pathlib import Path
 import sys
-import os
-import json
-from rich.live import Live
-from lib.ui import CrawlUI
+import argparse
 from lib.log_processor import LogProcessor
 from lib.docker_utils import docker_cmd, docker_popen
 
@@ -15,34 +12,36 @@ def win_to_wsl_path(path: Path) -> str:
     return f"/mnt/{drive}{rest}"
 
 
-def resolve_warc_input(p: Path) -> Path:
-    if p.is_file():
-        return p
-
-    archive = p / "archive"
-    if archive.exists():
-        return archive
-
-    return p
-
-
-def crawl(input_path: Path):
-    input_path = resolve_warc_input(input_path.resolve())
-
+def crawl(input_path: Path, seedfile: Path | None):
     mount_dir = input_path.parent
-    wsl_mount = win_to_wsl_path(mount_dir)
+    wsl_mount_config = win_to_wsl_path(mount_dir)
 
     input_inside = f"/data/{input_path.name}"
-    
 
-    cmd = [
-        "run", "--rm" ,
-        "-v", f"{wsl_mount}:/data", 
-        "-v", f"{wsl_mount}/crawls:/crawls/",
-        "webrecorder/browsertrix-crawler",
-        "crawl",
-        "--config" , input_inside
+    docker_opts = [
+        "run", "--rm",
+        "-v", f"{wsl_mount_config}:/data/",
+        "-v", f"{wsl_mount_config}/crawls:/crawls/",
     ]
+
+    container_args = [
+        "crawl",
+        "--config", input_inside,
+    ]
+
+    if seedfile:
+        wsl_mount_seed = win_to_wsl_path(seedfile.parent)
+        seed_inside = f"/seedfile/{seedfile.name}"
+        docker_opts.extend([
+            "-v", f"{wsl_mount_seed}:/seedfile/",
+        ])
+        container_args.extend([
+            "--seedFile", seed_inside,
+        ])
+
+    cmd = docker_opts + [
+        "webrecorder/browsertrix-crawler"
+    ] + container_args
 
     print("Running:"," ".join(docker_cmd() + cmd))
     proc = docker_popen(
@@ -74,8 +73,14 @@ def crawl(input_path: Path):
         raise RuntimeError(f"crawler exited with {return_code}")
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python crawl.py <path/to/config.yml>")
-        sys.exit(1)
+    ap = argparse.ArgumentParser(
+        prog="crawl",
+        description="使用 browsertrix存档网页并生成warc",
+    )
 
-    crawl(Path(sys.argv[1]))
+    ap.add_argument("--config", type=str, default="config.yaml", required=True)
+    ap.add_argument("--seedfile", help="种子文件", default="")
+
+    args = ap.parse_args()
+
+    crawl(Path(args.config), Path(args.seedfile) if args.seedfile != "" else None)

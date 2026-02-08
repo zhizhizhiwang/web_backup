@@ -2,6 +2,7 @@ import subprocess
 from pathlib import Path
 import sys
 import os
+import argparse
 from lib.docker_utils import docker_run, docker_cmd
 
 def win_to_wsl_path(path: Path) -> str:
@@ -22,7 +23,7 @@ def resolve_warc_input(p: Path) -> Path:
     return p
 
 
-def warc_to_zim_docker(input_path: Path, output_path: Path):
+def warc_to_zim_docker(input_path: Path, output_path: Path, args):
     input_path = resolve_warc_input(input_path.resolve())
     output_path = output_path.resolve()
 
@@ -42,16 +43,17 @@ def warc_to_zim_docker(input_path: Path, output_path: Path):
         "--name", "test",
         input_inside,
         "--output", output_inside,
+        *args
     ]
 
     print("Running:"," ".join(docker_cmd() + cmd))
-    docker_run(cmd, check=True)
+    docker_run(cmd , check=True)
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Usage: python convert_docker.py <input> <output>")
+        print("Usage: python convert_docker.py <input> <output> [args]")
         sys.exit(1)
 
     
-    warc_to_zim_docker(Path(sys.argv[1]), Path(sys.argv[2]))
+    warc_to_zim_docker(Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[2:])

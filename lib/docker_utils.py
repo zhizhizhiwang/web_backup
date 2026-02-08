@@ -151,12 +151,12 @@ def docker_cmd() -> List[str]:
 # docker 调用
 # ---------------------------
 
-def docker_run(args: List[str]) -> subprocess.CompletedProcess:
+def docker_run(args: List[str], **kwargs) -> subprocess.CompletedProcess:
     """
     阻塞 docker 调用
     """
     prefix = docker_cmd()
-    return subprocess.run(prefix + args)
+    return subprocess.run(prefix + args, **kwargs)
 
 
 def docker_popen(args: List[str], **kwargs) -> subprocess.Popen:
